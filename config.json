@@ -1,0 +1,8 @@
+{
+  "token_url": "",
+  "client_id": "my-client1",
+  "client_secret": "secret",
+  "scope": "offline",
+  "thread_num": 2,
+  "loop_num": 2
+}
