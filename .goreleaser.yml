@@ -3,7 +3,7 @@
 builds:
   # You can have multiple builds defined as a yaml list
   -
-    id: "go-oauth-example"
+    id: "hydra-test"
     env:
       - CGO_ENABLED=0
     goos:
