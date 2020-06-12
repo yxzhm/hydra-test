@@ -1,8 +1,9 @@
 {
-  "token_url": "",
+  "token_url": "http://127.0.0.1:4444/oauth2/token",
+  "introspect_url": "http://127.0.0.1:4445/oauth2/introspect",
   "client_id": "my-client1",
   "client_secret": "secret",
-  "scope": "offline",
+  "scope": "ncs",
   "thread_num": 2,
   "loop_num": 2
 }

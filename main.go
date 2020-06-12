@@ -31,14 +31,30 @@ func init() {
 }
 
 func worker() {
+	token := getToken()
 	for n := 0; n < config.LoopNum; n++ {
-		getToken()
+		introspectToken(token)
 
 	}
 	wg.Done()
 }
 
-func getToken() {
+func introspectToken(token Token) {
+	data := url.Values{}
+	data.Set("token", token.AccessToken)
+	start := time.Now()
+	r, err := http.Post(config.IntrospectUrl, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+	duration := time.Since(start)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	content, _ := ioutil.ReadAll(r.Body)
+
+	log.Println(duration, string(content))
+	fileLogger.Println(fmt.Sprintf("%s %s", duration, string(content)))
+}
+
+func getToken() Token {
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_id", config.ClientID)
@@ -54,7 +70,12 @@ func getToken() {
 	content, _ := ioutil.ReadAll(r.Body)
 
 	log.Println(duration, string(content))
-	fileLogger.Println(fmt.Sprintf("%s %s", duration, string(content)))
+	//fileLogger.Println(fmt.Sprintf("%s %s", duration, string(content)))
+
+	var token Token
+
+	json.Unmarshal(content, &token)
+	return token
 }
 
 func main() {
