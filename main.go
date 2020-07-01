@@ -89,13 +89,9 @@ func main() {
 		"",
 		log.Lmicroseconds)
 
-	wg.Add(config.ThreadNum)
-	for n := 0; n < config.ThreadNum; n++ {
-		go worker()
+	for n := 0; n < config.LoopNum; n++ {
+		getToken()
+
 	}
-
-	// Interrupt by Ctrl + C
-
-	wg.Wait()
 	log.Println("Complete")
 }
