@@ -30,15 +30,6 @@ func init() {
 	}
 }
 
-func worker() {
-	token := getToken()
-	for n := 0; n < config.LoopNum; n++ {
-		introspectToken(token)
-
-	}
-	wg.Done()
-}
-
 func introspectToken(token Token) {
 	data := url.Values{}
 	data.Set("token", token.AccessToken)
@@ -51,10 +42,10 @@ func introspectToken(token Token) {
 	content, _ := ioutil.ReadAll(r.Body)
 
 	log.Println(duration, string(content))
-	fileLogger.Println(fmt.Sprintf("%s %s", duration, string(content)))
+	fileLogger.Print(fmt.Sprintf("%s %s", duration, string(content)))
 }
 
-func getToken() Token {
+func getToken(logEnable bool) Token {
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_id", config.ClientID)
@@ -68,9 +59,10 @@ func getToken() Token {
 		fmt.Println(err.Error())
 	}
 	content, _ := ioutil.ReadAll(r.Body)
-
-	log.Println(duration, string(content))
-	//fileLogger.Println(fmt.Sprintf("%s %s", duration, string(content)))
+	if logEnable {
+		log.Println(duration, string(content))
+		fileLogger.Println(fmt.Sprintf("%s %s", duration, string(content)))
+	}
 
 	var token Token
 
@@ -80,7 +72,17 @@ func getToken() Token {
 
 func main() {
 
-	file, err := os.OpenFile("result.log",
+	argsWithoutProg := os.Args[1:]
+	// By default, test the token generating.
+	mode := "token"
+	if len(argsWithoutProg) > 0 {
+		if argsWithoutProg[0] == "-i" {
+			mode = "introspect"
+		}
+	}
+	fmt.Println(mode)
+
+	file, err := os.OpenFile(fmt.Sprintf("%s.log", mode),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalln("Failed to open error log file:", err)
@@ -91,10 +93,24 @@ func main() {
 
 	wg.Add(config.ThreadNum)
 	for n := 0; n < config.ThreadNum; n++ {
-		go worker()
-	}
+		if mode == "token" {
+			go func() {
+				for n := 0; n < config.LoopNum; n++ {
+					getToken(true)
+				}
+				wg.Done()
+			}()
+		} else {
+			go func() {
+				token := getToken(false)
+				for n := 0; n < config.LoopNum; n++ {
+					introspectToken(token)
+				}
+				wg.Done()
+			}()
+		}
 
-	// Interrupt by Ctrl + C
+	}
 
 	wg.Wait()
 	log.Println("Complete")
