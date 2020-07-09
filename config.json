@@ -4,6 +4,6 @@
   "client_id": "my-client1",
   "client_secret": "secret",
   "scope": "ncs",
-  "thread_num": 2,
-  "loop_num": 2
+  "thread_num": 10,
+  "loop_num": 100
 }
